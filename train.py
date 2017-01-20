@@ -5,7 +5,7 @@ import os
 import matplotlib.pyplot as plt
 import chainer
 from chainer import optimizers
-from chainer import serializers
+#from chainer import serializers
 import net
 
 import trainer
