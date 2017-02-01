@@ -5,7 +5,7 @@ import os
 import matplotlib.pyplot as plt
 import chainer
 from chainer import optimizers
-#from chainer import serializers
+from chainer import serializers
 import net
 
 import trainer
@@ -140,8 +140,15 @@ if __name__ == '__main__':
     with open(log_file_path, 'w') as f:
         f.write('epoch,train loss,train acc,valid loss,valid acc,test loss,test acc\n')
     cifar_trainer.fit(train_x, train_y, valid_x, valid_y, test_x, test_y, on_epoch_done)
+    
+    print('best test error: {}'.format(state['best_test_error']))
 
-    print('best test error: {in loss', c='blue')
+    train_loss, train_acc, test_loss, test_acc = np.loadtxt(log_file_path, delimiter=',', skiprows=1, usecols=[1, 2, 5, 6], unpack=True)
+    epoch = len(train_loss)
+    xs = np.arange(epoch, dtype=np.int32) + 1
+    plt.clf()
+    fig, ax = plt.subplots()
+    ax.plot(xs, train_loss, label='train loss', c='blue')
     ax.plot(xs, test_loss, label='test loss', c='red')
     ax.set_xlim((1, epoch))
     ax.set_xlabel('epoch')
@@ -150,4 +157,11 @@ if __name__ == '__main__':
     plt.savefig('{}_loss.png'.format(args.prefix), bbox_inches='tight')
 
     plt.clf()
-    fig, 
+    fig, ax = plt.subplots()
+    ax.plot(xs, train_acc, label='train error', c='blue')
+    ax.plot(xs, test_acc, label='test error', c='red')
+    ax.set_xlim([1, epoch])
+    ax.set_xlabel('epoch')
+    ax.set_ylabel('error')
+    ax.legend(loc='upper right')
+plt.savefig('{}_error'.format(args.prefix), bbox_inches='tight')
