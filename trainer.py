@@ -31,7 +31,7 @@ class CifarTrainer(object):
         for epoch in six.moves.range(self.epoch_num):
             perm = np.random.permutation(len(x))
             train_loss = 0
-            train_acc = 0
+            train_error = 0
             for i in six.moves.range(0, len(x), self.batch_size):
                 self.net.zerograds()
                 batch_index = perm[i:i + batch_size]
@@ -40,31 +40,31 @@ class CifarTrainer(object):
                 loss.backward()
                 self.optimizer.update()
                 train_loss += float(loss.data) * len(x_batch)
-                train_acc += float(acc.data) * len(x_batch)
+                train_error += float(acc.data) * len(x_batch)
             train_loss /= len(x)
-            train_acc /= len(x)
+            train_error /= len(x)
             valid_loss = 0
-            valid_acc = 0
+            valid_error = 0
             if valid_x is not None and valid_y is not None:
                 for i in six.moves.range(0, len(valid_x), self.batch_size):
                     x_batch = valid_x[i:i + batch_size]
                     loss, acc = self.__forward(x_batch, valid_y[i:i + batch_size], train=False)
                     valid_loss += float(loss.data) * len(x_batch)
-                    valid_acc += float(acc.data) * len(x_batch)
+                    valid_error += float(acc.data) * len(x_batch)
                 valid_loss /= len(valid_x)
-                valid_acc /= len(valid_x)
+                valid_error /= len(valid_x)
             test_loss = 0
-            test_acc = 0
+            test_error = 0
             if test_x is not None and test_y is not None:
                 for i in six.moves.range(0, len(test_x), self.batch_size):
                     x_batch = test_x[i:i + batch_size]
                     loss, acc = self.__forward(x_batch, test_y[i:i + batch_size], train=False)
                     test_loss += float(loss.data) * len(x_batch)
-                    test_acc += float(acc.data) * len(x_batch)
+                    test_error += float(acc.data) * len(x_batch)
                 test_loss /= len(test_x)
-                test_acc /= len(test_x)
+                test_error /= len(test_x)
             if callback is not None:
-                callback(epoch, self.net, self.optimizer, train_loss, train_acc, valid_loss, valid_acc, test_loss, test_acc)
+                callback(epoch, self.net, self.optimizer, train_loss, train_error, valid_loss, valid_error, test_loss, test_error)
 
     def __forward(self, batch_x, batch_t, train=True):
         xp = self.xp

@@ -110,16 +110,16 @@ if __name__ == '__main__':
     def on_epoch_done(epoch, n, o, loss, acc, valid_loss, valid_acc, test_loss, test_acc):
         error = 100 * (1 - acc)
         valid_error = 100 * (1 - valid_acc)
-        test_error = 100 * (1 - test_acc)
+        test_error2 = 100 * (1 - test_error)
         print('epoch {} done'.format(epoch))
         print('train loss: {} error: {}'.format(loss, error))
         print('valid loss: {} error: {}'.format(valid_loss, valid_error))
-        print('test  loss: {} error: {}'.format(test_loss, test_error))
+        print('test  loss: {} error: {}'.format(test_loss, test_error2))
         if valid_error < state['best_valid_error']:
             serializers.save_npz('{}.model'.format(model_prefix), n)
             serializers.save_npz('{}.state'.format(model_prefix), o)
             state['best_valid_error'] = valid_error
-            state['best_test_error'] = test_error
+            state['best_test_error'] = test_error2
         if args.save_iter > 0 and (epoch + 1) % args.save_iter == 0:
             serializers.save_npz('{}_{}.model'.format(model_prefix, epoch + 1), n)
             serializers.save_npz('{}_{}.state'.format(model_prefix, epoch + 1), o)
@@ -135,15 +135,15 @@ if __name__ == '__main__':
         print('elapsed time: {}'.format(clock - state['clock']))
         state['clock'] = clock
         with open(log_file_path, 'a') as f:
-            f.write('{},{},{},{},{},{},{}\n'.format(epoch + 1, loss, error, valid_loss, valid_error, test_loss, test_error))
+            f.write('{},{},{},{},{},{},{}\n'.format(epoch + 1, loss, error, valid_loss, valid_error, test_loss, test_error2))
 
     with open(log_file_path, 'w') as f:
         f.write('epoch,train loss,train acc,valid loss,valid acc,test loss,test acc\n')
     cifar_trainer.fit(train_x, train_y, valid_x, valid_y, test_x, test_y, on_epoch_done)
-    
+
     print('best test error: {}'.format(state['best_test_error']))
 
-    train_loss, train_acc, test_loss, test_acc = np.loadtxt(log_file_path, delimiter=',', skiprows=1, usecols=[1, 2, 5, 6], unpack=True)
+    train_loss, train_error, test_loss, test_error = np.loadtxt(log_file_path, delimiter=',', skiprows=1, usecols=[1, 2, 5, 6], unpack=True)
     epoch = len(train_loss)
     xs = np.arange(epoch, dtype=np.int32) + 1
     plt.clf()
@@ -158,8 +158,8 @@ if __name__ == '__main__':
 
     plt.clf()
     fig, ax = plt.subplots()
-    ax.plot(xs, train_acc, label='train error', c='blue')
-    ax.plot(xs, test_acc, label='test error', c='red')
+    ax.plot(xs, train_error, label='train error', c='blue')
+    ax.plot(xs, test_error, label='test error', c='red')
     ax.set_xlim([1, epoch])
     ax.set_xlabel('epoch')
     ax.set_ylabel('error')
